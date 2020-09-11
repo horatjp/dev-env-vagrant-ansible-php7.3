@@ -12,13 +12,13 @@ Vagrant上のAnsibleでプロビジョニングしPHP開発環境を構築する
 ## 説明
 
 ### Vagrant
-
+```
 vagrant plugin install vagrant-vbguest
 vagrant plugin install dotenv
 vagrant plugin install vagrant-disksize
 vagrant plugin install vagrant-hostsupdater
 vagrant plugin install vagrant-hostmanager
-
+```
 
 ### Ansible
 /provision/playbook.yml

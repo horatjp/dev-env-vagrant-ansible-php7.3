@@ -1,0 +1,4 @@
+database:
+  name: vagrant
+  user: vagrant
+  password: vagrant

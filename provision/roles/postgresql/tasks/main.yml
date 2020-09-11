@@ -1,0 +1,49 @@
+---
+- name: PostgreSQLインストール
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - postgresql
+      - python-psycopg2
+
+- name: PostgreSQLコンフィグ書き換え
+  notify: Restart postgresql
+  replace: dest=/etc/postgresql/11/main/pg_hba.conf regexp="{{ item.regexp }}" replace="{{ item.replace }}"
+  with_items:
+    - { regexp: 'local\s+all\s+all\s+peer',  replace: 'local all all md5' }
+
+- name: PostgreSQLコンフィグ追記
+  notify: Restart postgresql
+  lineinfile: dest=/etc/postgresql/11/main/pg_hba.conf line="{{ item }}"
+  with_items:
+    - 'host all all 0.0.0.0/0 md5'
+
+
+- name: PostgreSQLコンフィグ追記
+  notify: Restart postgresql
+  lineinfile: dest=/etc/postgresql/11/main/postgresql.conf regexp="{{item.regexp}}" insertafter="{{item.insertafter}}" line="{{item.line}}"
+  with_items:
+    - { regexp: "^listen_addresses", insertafter: "^#listen_addresses", line: "listen_addresses = '*'" }
+
+
+- name : PostgreSQLデータベース作成
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_db:
+    name: "{{ database.name }}"
+    encoding: "UTF-8"
+
+- name: PostgreSQLユーザー作成
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_user:
+    db: "{{ database.name }}"
+    name: "{{ database.user }}"
+    password: "{{ database.password }}"
+    priv: ALL
+    state: present

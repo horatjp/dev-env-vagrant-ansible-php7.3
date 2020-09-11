@@ -1,0 +1,8 @@
+---
+- name: nginxインストール
+  apt:
+    name: nginx
+
+- name: nginx設定ファイルコピー
+  notify: Reload nginx
+  template: src=default.conf.j2 dest=/etc/nginx/sites-available/default

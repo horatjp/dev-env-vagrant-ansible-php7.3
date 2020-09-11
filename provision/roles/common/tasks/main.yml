@@ -1,0 +1,28 @@
+---
+- name: タイムゾーン設定
+  timezone:
+    name: Asia/Tokyo
+
+- include: locale.yml
+
+- include: apt.yml
+
+- name: ベースパッケージインストール
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - zip
+      - unzip
+      - curl
+      - httpie
+      - rsync
+      - dnsutils
+      - imagemagick
+      - git
+
+- include: self_ssl.yml
+
+- name: Memcachedインストール
+  apt:
+    name: memcached

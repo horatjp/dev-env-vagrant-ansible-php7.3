@@ -1,0 +1,10 @@
+- name: SSL自己証明書
+  shell: |
+    subject="/C=JP/ST=Tokyo/L=Chiyoda-ku" &&
+    openssl req -new -newkey rsa:2048 -sha1 -x509 -nodes \
+      -set_serial 1 \
+      -days 365 \
+      -subj "$subject" \
+      -out "/etc/ssl/private/server.crt" \
+      -keyout "/etc/ssl/private/server.key" &&
+    chmod 400 /etc/ssl/private/server.*

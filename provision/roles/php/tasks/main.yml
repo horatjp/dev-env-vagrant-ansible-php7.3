@@ -1,0 +1,62 @@
+---
+- name: PHPインストール
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - php-fpm
+      - php-mbstring
+      - php-zip
+      - php-xml
+      - php-gd
+      - php-imagick
+      - php-pgsql
+      - php-mysql
+      - php-sqlite3
+      - php-memcached
+      - php-xdebug
+
+
+- name: PHP設定ファイルコピー
+  copy: src=../files/xdebug.ini dest=/etc/php/7.3/mods-available/xdebug.ini
+
+- name: PHP設定(fpm)
+  lineinfile:
+    dest: "/etc/php/7.3/fpm/php.ini"
+    backrefs: yes
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.replace }}'
+  with_items:
+    - { regexp: '^;(date.timezone) =.*', replace: '\1 = Asia/Tokyo' }
+    - { regexp: '^(post_max_size) =.*', replace: '\1 = 128M' }
+    - { regexp: '^(upload_max_filesize) =.*', replace: '\1 = 120M' }
+
+- name: PHP設定(cli)
+  lineinfile:
+    dest: "/etc/php/7.3/cli/php.ini"
+    backrefs: yes
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.replace }}'
+  with_items:
+    - { regexp: '^;(date.timezone) =.*', replace: '\1 = Asia/Tokyo' }
+
+- name: PHP-FPM設定
+  replace:
+    dest: /etc/php/7.3/fpm/pool.d/www.conf
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  with_items:
+    - { regexp: "^listen = .*", replace: "listen = 127.0.0.1:9000" }
+
+- name: PHP-FPM再起動
+  service:
+    name: php7.3-fpm
+    state: restarted
+
+- name: composerインストール
+  command: "{{ item }}"
+  with_items:
+    - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    - php composer-setup.php
+    - php -r "unlink('composer-setup.php');"
+    - mv composer.phar /usr/local/bin/composer

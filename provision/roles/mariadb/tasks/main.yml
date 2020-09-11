@@ -1,0 +1,35 @@
+---
+- name: MariaDBインストール
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - mariadb-server
+      - python-mysqldb
+
+- name: MariaDB設定ファイルコピー
+  notify: Restart mariadb
+  copy: src=../files/my.cnf dest=/etc/mysql/conf.d/my.cnf
+
+- name: MariaDB設定
+  notify: Restart mariadb
+  lineinfile:
+    dest: "/etc/mysql/mariadb.conf.d/50-server.cnf"
+    backrefs: yes
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.replace }}'
+  with_items:
+    - { regexp: '^bind-address', replace: '#bind-address' }
+
+- name: MariaDBデータベースを作成
+  mysql_db:
+    name: "{{ database.name }}"
+    state: present
+
+- name: MariaDBユーザーを作成
+  mysql_user:
+    name: "{{ database.user }}"
+    password: "{{ database.password }}"
+    priv: "{{ database.name }}.*:ALL"
+    host: "%"
+    state: present

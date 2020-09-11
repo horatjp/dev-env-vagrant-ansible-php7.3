@@ -1,0 +1,6 @@
+---
+- name: Restart mariadb
+  action: service name=mariadb state=restarted enabled=yes
+
+- name: Reload mariadb
+  action: service name=mariadb state=reloaded
